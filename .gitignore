@@ -1,0 +1,10 @@
+.env
+data/
+*.db
+bin/
+*.exe
+*.log
+dist/
+*.sqlite
+.DS_Store
+Thumbs.db
