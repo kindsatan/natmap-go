@@ -78,8 +78,8 @@ func (h *MappingHandler) GetMapping(c *gin.Context) {
 	c.JSON(http.StatusOK, resp)
 }
 
-// UpdateMappingRequest 更新映射请求
-type UpdateMappingRequest struct {
+// UpdateMappingAPIRequest 更新映射请求 (API 版本)
+type UpdateMappingAPIRequest struct {
 	App       string `json:"app" binding:"required"`
 	IP        string `json:"ip" binding:"required,ip"`
 	Port      uint   `json:"port" binding:"required,min=1,max=65535"`
@@ -100,7 +100,7 @@ func (h *MappingHandler) UpdateMapping(c *gin.Context) {
 		return
 	}
 
-	var req UpdateMappingRequest
+	var req UpdateMappingAPIRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"error": err.Error(),

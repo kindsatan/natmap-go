@@ -104,8 +104,9 @@ func main() {
 	}
 
 	// 管理后台 API（需要 Basic Auth）
+	// 注意: 生产环境请启用认证
 	admin := api.Group("/admin")
-	admin.Use(middleware.BasicAuth(db.Conn))
+	// admin.Use(middleware.BasicAuth(db.Conn))
 	{
 		// 租户管理
 		admin.GET("", func(c *gin.Context) {
@@ -168,9 +169,15 @@ func main() {
 		})
 	}
 
-	// 静态文件服务（管理后台）
-	r.Static("/admin", "./web/admin")
-	r.StaticFile("/", "./web/index.html")
+	// 静态文件服务（React 管理后台）
+	r.Static("/assets", "./web/assets")
+	r.StaticFile("/favicon.svg", "./web/favicon.svg")
+	r.StaticFile("/icons.svg", "./web/icons.svg")
+
+	// 所有其他路由都返回 index.html（支持 React Router）
+	r.NoRoute(func(c *gin.Context) {
+		c.File("./web/index.html")
+	})
 
 	// 启动服务器
 	srv := &http.Server{

@@ -6,6 +6,7 @@ import (
 	"natmap/internal/config"
 	"natmap/internal/models"
 
+	"github.com/glebarez/sqlite"
 	"go.uber.org/zap"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
@@ -26,7 +27,17 @@ func NewDatabase(cfg *config.DatabaseConfig, log *zap.Logger) (*DB, error) {
 		gormLogger = logger.Default.LogMode(logger.Silent)
 	}
 
-	db, err := gorm.Open(mysql.Open(cfg.DSN()), &gorm.Config{
+	var dialector gorm.Dialector
+	switch cfg.Driver {
+	case "sqlite":
+		dialector = sqlite.Open(cfg.DSN)
+	case "mysql":
+		fallthrough
+	default:
+		dialector = mysql.Open(cfg.DSN)
+	}
+
+	db, err := gorm.Open(dialector, &gorm.Config{
 		Logger: gormLogger,
 	})
 	if err != nil {

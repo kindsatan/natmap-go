@@ -5,8 +5,9 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/patrickmn/go-cache"
 	"natmap/internal/models"
+
+	"github.com/patrickmn/go-cache"
 )
 
 // Cache 缓存接口
@@ -99,7 +100,7 @@ func (c *MemoryCache) Clear() {
 func (c *MemoryCache) Stats() map[string]interface{} {
 	items := c.client.Items()
 	return map[string]interface{}{
-		"item_count": len(items),
+		"item_count":          len(items),
 		"default_ttl_seconds": c.ttl.Seconds(),
 	}
 }

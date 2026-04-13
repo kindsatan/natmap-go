@@ -6,13 +6,10 @@ server:
   mode: release  # debug 或 release
 
 # 数据库配置
+# 支持 MySQL 和 SQLite
 database:
-  host: localhost
-  port: 3306
-  username: root
-  password: "123456"
-  dbname: natmap
-  charset: utf8mb4
+  driver: mysql
+  dsn: "root:123456@tcp(localhost:3306)/natmap?charset=utf8mb4&parseTime=True&loc=Local"
   max_idle_conns: 10
   max_open_conns: 100
   conn_max_lifetime: 3600  # 秒

@@ -3,8 +3,6 @@ package migrator
 import (
 	"encoding/json"
 	"fmt"
-	"io"
-	"net/http"
 	"time"
 
 	"gorm.io/gorm"
@@ -31,9 +29,9 @@ type D1Record struct {
 
 // Migrator 数据迁移器
 type Migrator struct {
-	DB          *gorm.DB
-	D1Endpoint  string
-	D1Token     string
+	DB         *gorm.DB
+	D1Endpoint string
+	D1Token    string
 }
 
 // NewMigrator 创建迁移器
@@ -137,16 +135,16 @@ func (m *Migrator) migrateMappings() error {
 
 	for _, mData := range mappings {
 		mapping := models.Mapping{
-			ID:          mData.ID,
-			TenantID:    mData.TenantID,
-			AppID:       mData.AppID,
-			PublicIP:    mData.PublicIP,
-			PublicPort:  mData.PublicPort,
-			LocalIP:     mData.LocalIP,
-			LocalPort:   mData.LocalPort,
-			Protocol:    mData.Protocol,
-			CreatedAt:   mData.CreatedAt,
-			UpdatedAt:   mData.UpdatedAt,
+			ID:         mData.ID,
+			TenantID:   mData.TenantID,
+			AppID:      mData.AppID,
+			PublicIP:   mData.PublicIP,
+			PublicPort: mData.PublicPort,
+			LocalIP:    mData.LocalIP,
+			LocalPort:  mData.LocalPort,
+			Protocol:   mData.Protocol,
+			CreatedAt:  mData.CreatedAt,
+			UpdatedAt:  mData.UpdatedAt,
 		}
 
 		if err := m.DB.FirstOrCreate(&mapping, models.Mapping{ID: mData.ID}).Error; err != nil {
