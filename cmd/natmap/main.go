@@ -181,12 +181,35 @@ func main() {
 	}
 
 	// 静态文件服务（React 管理后台）
-	r.Static("/assets", "./web/assets")
-	r.StaticFile("/favicon.svg", "./web/favicon.svg")
-	r.StaticFile("/icons.svg", "./web/icons.svg")
+	// 使用自定义中间件添加缓存控制头
+	assetFS := gin.Dir("./web/assets", false)
+	assetServer := func(c *gin.Context) {
+		// 添加缓存控制头 - JS/CSS 文件可以缓存，因为文件名有 hash
+		c.Header("Cache-Control", "public, max-age=31536000, immutable")
+		c.Header("X-Content-Type-Options", "nosniff")
+		staticServer := http.FileServer(assetFS)
+		staticServer.ServeHTTP(c.Writer, c.Request)
+	}
+	r.GET("/assets/*filepath", assetServer)
+
+	// 静态文件 - 不缓存
+	r.GET("/favicon.svg", func(c *gin.Context) {
+		c.Header("Cache-Control", "no-cache, no-store, must-revalidate")
+		c.File("./web/favicon.svg")
+	})
+	r.GET("/icons.svg", func(c *gin.Context) {
+		c.Header("Cache-Control", "no-cache, no-store, must-revalidate")
+		c.File("./web/icons.svg")
+	})
 
 	// 所有其他路由都返回 index.html（支持 React Router）
+	// 添加严格的缓存控制，确保每次都获取最新版本
 	r.NoRoute(func(c *gin.Context) {
+		c.Header("Cache-Control", "no-cache, no-store, must-revalidate, proxy-revalidate")
+		c.Header("Pragma", "no-cache")
+		c.Header("Expires", "0")
+		c.Header("X-Content-Type-Options", "nosniff")
+		c.Header("X-Frame-Options", "DENY")
 		c.File("./web/index.html")
 	})
 
