@@ -13,6 +13,10 @@ import {
   IconButton,
   Divider,
   Container,
+  Avatar,
+  Menu,
+  MenuItem,
+  Tooltip,
 } from '@mui/material';
 import {
   Menu as MenuIcon,
@@ -20,8 +24,11 @@ import {
   Apps as AppsIcon,
   Route as RouteIcon,
   Dashboard as DashboardIcon,
+  Logout as LogoutIcon,
+  AccountCircle as AccountIcon,
 } from '@mui/icons-material';
 import { useNavigate, useLocation } from 'react-router-dom';
+import { useAuth } from '../contexts/AuthContext';
 
 const drawerWidth = 240;
 
@@ -34,8 +41,23 @@ const menuItems = [
 
 function Layout({ children }) {
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [anchorEl, setAnchorEl] = useState(null);
   const navigate = useNavigate();
   const location = useLocation();
+  const { user, logout } = useAuth();
+
+  const handleMenuOpen = (event) => {
+    setAnchorEl(event.currentTarget);
+  };
+
+  const handleMenuClose = () => {
+    setAnchorEl(null);
+  };
+
+  const handleLogout = () => {
+    logout();
+    navigate('/login');
+  };
 
   const handleDrawerToggle = () => {
     setMobileOpen(!mobileOpen);
@@ -111,9 +133,39 @@ function Layout({ children }) {
           <Typography variant="h6" noWrap component="div" sx={{ flexGrow: 1 }}>
             NATMap 管理后台
           </Typography>
-          <Typography variant="body2" color="inherit" sx={{ opacity: 0.8 }}>
-            Go 版本
-          </Typography>
+          
+          {/* 用户信息菜单 */}
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <Typography variant="body2" color="inherit" sx={{ opacity: 0.9 }}>
+              {user?.username || 'Admin'}
+            </Typography>
+            <Tooltip title="账户菜单">
+              <IconButton onClick={handleMenuOpen} color="inherit">
+                <Avatar sx={{ width: 32, height: 32, bgcolor: 'secondary.main' }}>
+                  <AccountIcon />
+                </Avatar>
+              </IconButton>
+            </Tooltip>
+          </Box>
+          
+          <Menu
+            anchorEl={anchorEl}
+            open={Boolean(anchorEl)}
+            onClose={handleMenuClose}
+            anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+            transformOrigin={{ vertical: 'top', horizontal: 'right' }}
+          >
+            <MenuItem disabled>
+              <Typography variant="body2" color="text.secondary">
+                角色: {user?.role === 'admin' ? '管理员' : '用户'}
+              </Typography>
+            </MenuItem>
+            <Divider />
+            <MenuItem onClick={handleLogout}>
+              <LogoutIcon fontSize="small" sx={{ mr: 1 }} />
+              退出登录
+            </MenuItem>
+          </Menu>
         </Toolbar>
       </AppBar>
 

@@ -83,6 +83,12 @@ func main() {
 	// 创建处理器
 	mappingHandler := handlers.NewMappingHandler(db, appCache, logger)
 	adminHandler := handlers.NewAdminHandler(db, appCache, logger)
+	authHandler := handlers.NewAuthHandler(db, cfg, logger)
+
+	// 初始化默认管理员用户
+	if err := authHandler.InitDefaultUser(); err != nil {
+		logger.Fatal("Failed to init default user", zap.Error(err))
+	}
 
 	// 公开 API（无需认证）
 	api := r.Group("/api")
@@ -103,10 +109,15 @@ func main() {
 		api.POST("/update", mappingHandler.UpdateMapping)
 	}
 
-	// 管理后台 API（需要 Basic Auth）
-	// 注意: 生产环境请启用认证
+	// 认证 API（无需认证）
+	auth := api.Group("/auth")
+	{
+		auth.POST("/login", authHandler.Login)
+	}
+
+	// 管理后台 API（需要 JWT 认证）
 	admin := api.Group("/admin")
-	// admin.Use(middleware.BasicAuth(db.Conn))
+	admin.Use(middleware.TokenAuth(cfg.JWT.Secret))
 	{
 		// 租户管理
 		admin.GET("", func(c *gin.Context) {

@@ -42,6 +42,17 @@ apiClient.interceptors.response.use(
   }
 );
 
+// ==================== 认证 API ====================
+
+export const authApi = {
+  // 登录
+  login: (username, password) => 
+    apiClient.post('/api/auth/login', { username, password }),
+  
+  // 获取当前用户信息
+  me: () => apiClient.get('/api/auth/me'),
+};
+
 // ==================== 租户管理 API ====================
 
 export const tenantApi = {

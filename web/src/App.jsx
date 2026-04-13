@@ -1,8 +1,11 @@
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
 
+import { AuthProvider } from './contexts/AuthContext';
+import ProtectedRoute from './components/ProtectedRoute';
 import Layout from './components/Layout';
+import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
 import TenantManagement from './pages/TenantManagement';
 import AppManagement from './pages/AppManagement';
@@ -35,20 +38,36 @@ const theme = createTheme({
   },
 });
 
+// 受保护的路由包装器
+function ProtectedLayout({ children }) {
+  return (
+    <ProtectedRoute>
+      <Layout>{children}</Layout>
+    </ProtectedRoute>
+  );
+}
+
 function App() {
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
-      <Router>
-        <Layout>
+      <AuthProvider>
+        <Router>
           <Routes>
-            <Route path="/" element={<Dashboard />} />
-            <Route path="/tenants" element={<TenantManagement />} />
-            <Route path="/apps" element={<AppManagement />} />
-            <Route path="/mappings" element={<MappingManagement />} />
+            {/* 登录页面 - 公开访问 */}
+            <Route path="/login" element={<Login />} />
+            
+            {/* 受保护的管理后台路由 */}
+            <Route path="/" element={<ProtectedLayout><Dashboard /></ProtectedLayout>} />
+            <Route path="/tenants" element={<ProtectedLayout><TenantManagement /></ProtectedLayout>} />
+            <Route path="/apps" element={<ProtectedLayout><AppManagement /></ProtectedLayout>} />
+            <Route path="/mappings" element={<ProtectedLayout><MappingManagement /></ProtectedLayout>} />
+            
+            {/* 默认重定向到登录页 */}
+            <Route path="*" element={<Navigate to="/login" replace />} />
           </Routes>
-        </Layout>
-      </Router>
+        </Router>
+      </AuthProvider>
     </ThemeProvider>
   );
 }
