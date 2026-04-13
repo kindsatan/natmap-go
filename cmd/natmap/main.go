@@ -180,19 +180,22 @@ func main() {
 		})
 	}
 
-	// 静态文件服务（React 管理后台）
-	// 使用自定义中间件添加缓存控制头
-	r.StaticFS("/assets", gin.Dir("./web/assets", false))
+	// 缓存控制中间件 - 必须在静态文件服务之前注册
 	r.Use(func(c *gin.Context) {
-		if c.Request.URL.Path == "/" || c.Request.URL.Path == "/index.html" {
+		path := c.Request.URL.Path
+		if path == "/" || path == "/index.html" {
 			c.Header("Cache-Control", "no-cache, no-store, must-revalidate, proxy-revalidate")
 			c.Header("Pragma", "no-cache")
 			c.Header("Expires", "0")
-		} else if len(c.Request.URL.Path) > 8 && c.Request.URL.Path[:8] == "/assets/" {
+		} else if len(path) > 8 && path[:8] == "/assets/" {
 			c.Header("Cache-Control", "public, max-age=31536000, immutable")
 			c.Header("X-Content-Type-Options", "nosniff")
 		}
+		c.Next()
 	})
+
+	// 静态文件服务（React 管理后台）
+	r.StaticFS("/assets", gin.Dir("./web/assets", false))
 
 	// 静态文件 - 不缓存
 	r.GET("/favicon.svg", func(c *gin.Context) {
