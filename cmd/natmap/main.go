@@ -182,15 +182,17 @@ func main() {
 
 	// 静态文件服务（React 管理后台）
 	// 使用自定义中间件添加缓存控制头
-	assetFS := gin.Dir("./web/assets", false)
-	assetServer := func(c *gin.Context) {
-		// 添加缓存控制头 - JS/CSS 文件可以缓存，因为文件名有 hash
-		c.Header("Cache-Control", "public, max-age=31536000, immutable")
-		c.Header("X-Content-Type-Options", "nosniff")
-		staticServer := http.FileServer(assetFS)
-		staticServer.ServeHTTP(c.Writer, c.Request)
-	}
-	r.GET("/assets/*filepath", assetServer)
+	r.StaticFS("/assets", gin.Dir("./web/assets", false))
+	r.Use(func(c *gin.Context) {
+		if c.Request.URL.Path == "/" || c.Request.URL.Path == "/index.html" {
+			c.Header("Cache-Control", "no-cache, no-store, must-revalidate, proxy-revalidate")
+			c.Header("Pragma", "no-cache")
+			c.Header("Expires", "0")
+		} else if len(c.Request.URL.Path) > 8 && c.Request.URL.Path[:8] == "/assets/" {
+			c.Header("Cache-Control", "public, max-age=31536000, immutable")
+			c.Header("X-Content-Type-Options", "nosniff")
+		}
+	})
 
 	// 静态文件 - 不缓存
 	r.GET("/favicon.svg", func(c *gin.Context) {
